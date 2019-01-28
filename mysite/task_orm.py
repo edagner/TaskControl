@@ -15,7 +15,8 @@ class TaskStep(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     step_name = db.Column(db.String(25), nullable=False)
     step_start = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    step_end = db.Column(db.DateTime, nullable=True)
+    step_end = db.Column(db.DateTime, nullable=True, onupdate=datetime.utcnow)
+    completed = db.Column(db.Integer, nullable=True)
     task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
 
     def __repr__(self):
@@ -29,5 +30,5 @@ class TaskSchema(ma.Schema):
 
 class TaskStepSchema(ma.Schema):
     class Meta:
-        fields = ("id", "task_id", "step_name", "step_start", "step_end")
+        fields = ("id", "task_id", "step_name", "step_start", "step_end", "completed")
 

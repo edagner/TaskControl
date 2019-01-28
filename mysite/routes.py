@@ -8,13 +8,15 @@ taskstep_schema = TaskStepSchema(strict=True)
 tasksteps_schema = TaskStepSchema(many=True, strict=True)
 
 
-@app.route("/")
+@app.route("/view", methods=["GET"])
 def home():
-    return render_template("home.html", title="Home")
+    tasks = Task.query.all()
+    return tasks_schema.jsonify(tasks)
+    # return render_template("home.html", title="Home")
 
 
 # TASKS
-@app.route("/task", methods=["GET", "POST"])
+@app.route("/tasks", methods=["GET", "POST"])
 def get_add_tasks():
     if request.method == "GET":
         tasks = Task.query.all()
@@ -27,17 +29,42 @@ def get_add_tasks():
         return task_schema.jsonify(task)
 
 
-@app.route("/task/<tid>", methods=["GET"])
+@app.route("/task/<tid>", methods=["GET", "PUT", "DELETE"])
 def get_one_task(tid):
-    task = Task.query.get(tid)
-    return task_schema.jsonify(task)
+    if request.method == "GET":
+        task = Task.query.get(tid)
+        return task_schema.jsonify(task)
+    elif request.method == "PUT":
+        new_name = request.json['task_name']
+        task = Task.query.get(tid)
+        task.task_name = new_name
+        db.session.commit()
+        return task_schema.jsonify(task)
+    elif request.method == "DELETE":
+        task = Task.query.get(tid)
+        db.session.delete(task)
+        db.session.commit()
+        return "Task Resource was deleted"
 
 
 # TASK STEPS
-@app.route("/task_step/<tsid>", methods=["GET"])
-def get_specific_taskstep(tsid):
-    task_step = TaskStep.query.filter_by(id=tsid).first()
-    return taskstep_schema.jsonify(task_step)
+@app.route("/task_step/<tsid>", methods=["GET", "PUT", "DELETE"])
+def get_update_specific_taskstep(tsid):
+    if request.method == "GET":
+        # view specific task
+        task_step = TaskStep.query.filter_by(id=tsid).first()
+        return taskstep_schema.jsonify(task_step)
+    elif request.method == "PUT":
+        # completes a task_step
+        task_step = TaskStep.query.filter_by(id=tsid).first()
+        task_step.completed = 1
+        db.session.commit()
+        return taskstep_schema.jsonify(task_step)
+    elif request.method == "DELETE":
+        task_step = TaskStep.query.filter_by(id=tsid).first()
+        db.session.delete(task_step)
+        db.session.commit()
+        return "Resource was deleted", 401
 
 
 @app.route("/task/<tid>/task_steps", methods=["GET"])
@@ -46,12 +73,14 @@ def get_all_tasksteps_for_task(tid):
     return tasksteps_schema.jsonify(task_step)
 
 
-@app.route("/task_step", methods=["GET", "POST"])
+@app.route("/task_steps", methods=["GET", "POST"])
 def add_get_tasksteps():
     if request.method == "GET":
+        # view all task steps
         task_steps = TaskStep.query.all()
         return tasksteps_schema.jsonify(task_steps)
     elif request.method == "POST":
+        # add new task_step
         step_n = request.json['step_name']
         tid = request.json['task_id']
         task_step = TaskStep(step_name=step_n, task_id=tid)
