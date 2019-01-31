@@ -1,11 +1,28 @@
 from flask import render_template, jsonify, request
-from mysite import app, db
-from mysite.task_orm import Task, TaskStep, TaskSchema, TaskStepSchema
+from app import app, db
+from app.task_orm import Task, TaskStep, TaskSchema, TaskStepSchema, User
+
 
 task_schema = TaskSchema(strict=True)
 tasks_schema = TaskSchema(many=True, strict=True)
 taskstep_schema = TaskStepSchema(strict=True)
 tasksteps_schema = TaskStepSchema(many=True, strict=True)
+
+
+@app.route("/users", methods=["POST"])
+def add_user():
+    user_name = request.json["user"]
+    pwd = request.json["password"]
+    if user_name is None or pwd is None:
+        return "Not enough information is provided"
+    elif User.query.get(user_name) is not None:
+        return "User is already registered"
+    else:
+        new_user = User(user=user_name)
+        new_user.hash_password(pwd)
+        db.session.add(new_user)
+        db.session.commit()
+        return jsonify({'username': new_user.username}), 201
 
 
 @app.route("/view", methods=["GET"])
