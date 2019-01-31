@@ -1,6 +1,5 @@
 from app import db, ma
 from datetime import datetime
-import os
 from passlib.apps import custom_app_context as pwd_context
 
 

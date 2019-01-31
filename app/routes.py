@@ -9,20 +9,29 @@ taskstep_schema = TaskStepSchema(strict=True)
 tasksteps_schema = TaskStepSchema(many=True, strict=True)
 
 
-@app.route("/users", methods=["POST"])
-def add_user():
+@app.route("/users", methods=["POST", "GET"])
+def add_verify_user():
     user_name = request.json["user"]
     pwd = request.json["password"]
     if user_name is None or pwd is None:
         return "Not enough information is provided"
-    elif User.query.get(user_name) is not None:
-        return "User is already registered"
-    else:
-        new_user = User(user=user_name)
-        new_user.hash_password(pwd)
-        db.session.add(new_user)
-        db.session.commit()
-        return jsonify({'username': new_user.username}), 201
+
+    if request.method == "POST":
+        if User.query.get(user_name) is not None:
+            return "User is already registered"
+        else:
+            new_user = User(username=user_name)
+            new_user.hash_password(pwd)
+            db.session.add(new_user)
+            db.session.commit()
+            return jsonify({'username': new_user.username}), 201
+    if request.method == "GET":
+        user = User.query.filter_by(username=user_name).first()
+        pwd_check = user.verify_password(pwd)
+        if pwd_check:
+            return "Authorized User"
+        else:
+            return "Unauthorized User, Move Along"
 
 
 @app.route("/view", methods=["GET"])
