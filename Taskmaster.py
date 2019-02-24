@@ -11,3 +11,8 @@ class TaskMaster:
     def view_all(self):
         res = requests.get(self.url + 'view', auth=(self.name, self.password))
         print(res.text)
+
+    def view_task(self, task_id):
+        endpoint = "{}task/{}".format(self.url, task_id)
+        res = requests.get(endpoint, auth=(self.name, self.password))
+        print(res.text)
