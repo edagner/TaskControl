@@ -1,7 +1,7 @@
 from flask import render_template, jsonify, request
 from app import app, db
 from app.task_orm import Task, TaskStep, TaskSchema, TaskStepSchema, User
-
+from authenticate import require_login
 
 task_schema = TaskSchema(strict=True)
 tasks_schema = TaskSchema(many=True, strict=True)
@@ -35,6 +35,7 @@ def add_verify_user():
 
 
 @app.route("/view", methods=["GET"])
+@require_login
 def home():
     tasks = Task.query.all()
     return tasks_schema.jsonify(tasks)
@@ -43,6 +44,7 @@ def home():
 
 # TASKS
 @app.route("/tasks", methods=["GET", "POST"])
+@require_login
 def get_add_tasks():
     if request.method == "GET":
         tasks = Task.query.all()
@@ -56,6 +58,7 @@ def get_add_tasks():
 
 
 @app.route("/task/<tid>", methods=["GET", "PUT", "DELETE"])
+@require_login
 def get_one_task(tid):
     if request.method == "GET":
         task = Task.query.get(tid)
@@ -75,6 +78,7 @@ def get_one_task(tid):
 
 # TASK STEPS
 @app.route("/task_step/<tsid>", methods=["GET", "PUT", "DELETE"])
+@require_login
 def get_update_specific_taskstep(tsid):
     if request.method == "GET":
         # view specific task
@@ -94,12 +98,14 @@ def get_update_specific_taskstep(tsid):
 
 
 @app.route("/task/<tid>/task_steps", methods=["GET"])
+@require_login
 def get_all_tasksteps_for_task(tid):
     task_step = TaskStep.query.filter_by(task_id=tid).all()
     return tasksteps_schema.jsonify(task_step)
 
 
 @app.route("/task_steps", methods=["GET", "POST"])
+@require_login
 def add_get_tasksteps():
     if request.method == "GET":
         # view all task steps
