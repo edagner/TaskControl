@@ -36,6 +36,7 @@ class TaskStep(db.Model):
         return '<TaskStep: {}, TaskStart: {}, TaskParentId: {}>'.format(self.step_name, self.step_start, self.task_id)
 
 
+# these dictate which fields will be returned when a get command is invoked on resource
 class TaskSchema(ma.Schema):
     class Meta:
         fields = ("id", "task_name")
