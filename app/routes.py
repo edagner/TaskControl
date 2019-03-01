@@ -34,12 +34,17 @@ def add_verify_user():
             return "Unauthorized User, Move Along"
 
 
-@app.route("/view", methods=["GET"])
+@app.route("/home", methods=["GET"])
 @require_login
 def home():
+    return render_template("home.html", title="Home")
+
+
+@app.route("/view", methods=["GET"])
+@require_login
+def view():
     tasks = Task.query.all()
     return tasks_schema.jsonify(tasks)
-    # return render_template("home.html", title="Home")
 
 
 # TASKS
